@@ -1,38 +1,67 @@
-# Prova 1 - Gerenciamento de fitopatologia de soja
-Autor: Luiz Felipe de Moura Teixeira
+# Sistema de Fitopatologia de Soja
 
-## Requisitos implementados
-- Cadastro (criação) de registros de fitopatologia.
-- Listagem em tabela com busca por produtor.
-- Edição/Atualização de registros.
-- Exclusão de registro.
-- Pesquisa por produtor (campo-chave).
-- Arquitetura em camadas: model, repository, service, controller, view.
-- Feedback ao usuário via alert (Thymeleaf + Bootstrap).
-- Persistência via JPA/Hibernate (MySQL).
+Sistema web para gerenciamento de doenças da soja, desenvolvido com Spring Boot e Thymeleaf.
 
-## Como executar
-1. Tenha Java 17, Maven e um servidor MySQL local.
-2. Crie banco de dados `fitopatologia`:
-   - `CREATE DATABASE fitopatologia;`
-3. Ajuste `src/main/resources/application.properties` com usuário/senha do MySQL.
-4. No diretório do projeto, execute:
-   - `mvn spring-boot:run`
-5. Acesse: `http://localhost:8080/registros`
+## Funcionalidades
 
-## Observações
-- O projeto é intencionalmente simples e didático.
-- Nome do arquivo entregue: `Prova1_LuizFelipeDeMouraTeixeira.zip`
-- Antes da prova oral, não faça alterações no repositório.
+- ✅ Cadastro de doenças da soja
+- ✅ Listagem completa com informações detalhadas
+- ✅ Edição e atualização de registros
+- ✅ Exclusão de doenças
+- ✅ Sistema de pesquisa avançado
+- ✅ Interface responsiva com Bootstrap
+- ✅ Validação de dados
+- ✅ Mensagens de feedback
 
-## Estrutura
-- `src/main/java/br/univ/fitopatologia`:
-  - `model/Registro.java`
-  - `repository/RegistroRepository.java`
-  - `service/RegistroService.java`
-  - `controller/RegistroController.java`
-  - `FitopatologiaApplication.java`
-- `src/main/resources/templates` (Thymeleaf + Bootstrap via webjars)
-- `pom.xml`
+## Tecnologias Utilizadas
 
-Data de geração: 2025-09-27T18:14:12.987066 UTC
+- **Backend**: Java 17 + Spring Boot 3.2.0
+- **Frontend**: Thymeleaf + Bootstrap 5
+- **Banco de Dados**: MySQL 8.0
+- **ORM**: JPA/Hibernate
+- **Gerenciamento**: Maven
+
+## Campos do Sistema
+
+### Campos Obrigatórios
+- Nome da doença
+- Agente causador
+- Tipo de patógeno (Fungo, Bactéria, Vírus, Nematoide, Oomiceto)
+- Severidade (Baixa, Média, Alta, Crítica)
+
+### Campos Opcionais
+- Sintomas
+- Métodos de controle
+- Região
+- Temperatura favorável
+- Umidade favorável
+
+## Pré-requisitos
+
+- Java 17 ou superior
+- MySQL 8.0 ou superior
+- Maven 3.6 ou superior
+
+## Configuração do Banco de Dados
+
+1. Instale o MySQL
+2. Crie um usuário (ou use o root):
+sql
+CREATE DATABASE fitopatologia_soja;
+
+
+3. Configure as credenciais no arquivo `application.properties`:
+properties
+spring.datasource.username=seu_usuario
+spring.datasource.password=sua_senha
+
+
+## Como Executar
+
+1. Clone o repositório
+2. Configure o banco de dados MySQL
+3. Execute o comando:
+bash
+mvn spring-boot:run
+
+4. Acesse: http://localhost:8080/doencas
