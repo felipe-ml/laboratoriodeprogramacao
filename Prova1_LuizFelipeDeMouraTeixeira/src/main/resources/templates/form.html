@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${titulo}">Formulário de Doença</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <style>
+        .form-control:focus, .form-select:focus {
+            border-color: #198754;
+            box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+        }
+        .required-field {
+            color: #dc3545;
+        }
+        .card {
+            box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        <span th:text="${titulo}">Nova Doença</span>
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/doencas/salvar}" th:object="${doenca}" method="post" novalidate>
+                        <input type="hidden" th:field="*{id}">
+                        <input type="hidden" th:field="*{dataRegistro}">
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nome" class="form-label">
+                                    Nome da Doença <span class="required-field">*</span>
+                                </label>
+                                <input type="text" class="form-control" th:field="*{nome}"
+                                       th:classappend="${#fields.hasErrors('nome')} ? 'is-invalid' : ''"
+                                       placeholder="Ex: Ferrugem asiática">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('nome')}"
+                                     th:errors="*{nome}">
+                                    Por favor, informe o nome da doença.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="agenteCausador" class="form-label">
+                                    Agente Causador <span class="required-field">*</span>
+                                </label>
+                                <input type="text" class="form-control" th:field="*{agenteCausador}"
+                                       th:classappend="${#fields.hasErrors('agenteCausador')} ? 'is-invalid' : ''"
+                                       placeholder="Ex: Phakopsora pachyrhizi">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('agenteCausador')}"
+                                     th:errors="*{agenteCausador}">
+                                    Por favor, informe o agente causador.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="tipoPatogeno" class="form-label">
+                                    Tipo de Patógeno <span class="required-field">*</span>
+                                </label>
+                                <select class="form-select" th:field="*{tipoPatogeno}"
+                                        th:classappend="${#fields.hasErrors('tipoPatogeno')} ? 'is-invalid' : ''">
+                                    <option value="">Selecione o tipo</option>
+                                    <option th:each="tipo : ${tiposPatogeno}"
+                                            th:value="${tipo}"
+                                            th:text="${tipo.descricao}"></option>
+                                </select>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('tipoPatogeno')}"
+                                     th:errors="*{tipoPatogeno}">
+                                    Por favor, selecione o tipo de patógeno.
+                                </div>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="severidade" class="form-label">
+                                    Severidade <span class="required-field">*</span>
+                                </label>
+                                <select class="form-select" th:field="*{severidade}"
+                                        th:classappend="${#fields.hasErrors('severidade')} ? 'is-invalid' : ''">
+                                    <option value="">Selecione a severidade</option>
+                                    <option th:each="sev : ${severidade}"
+                                            th:value="${sev}"
+                                            th:text="${sev.descricao}"></option>
+                                </select>
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('severidade')}"
+                                     th:errors="*{severidade}">
+                                    Por favor, selecione a severidade.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="sintomas" class="form-label">Sintomas</label>
+                            <textarea class="form-control" th:field="*{sintomas}" rows="4"
+                                      th:classappend="${#fields.hasErrors('sintomas')} ? 'is-invalid' : ''"
+                                      placeholder="Descreva os principais sintomas da doença"></textarea>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('sintomas')}"
+                                 th:errors="*{sintomas}"></div>
+                            <div class="form-text">
+                                Descreva detalhadamente os sintomas visíveis da doença nas plantas.
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="controle" class="form-label">Métodos de Controle</label>
+                            <textarea class="form-control" th:field="*{controle}" rows="3"
+                                      th:classappend="${#fields.hasErrors('controle')} ? 'is-invalid' : ''"
+                                      placeholder="Descreva os métodos de controle recomendados"></textarea>
+                            <div class="invalid-feedback" th:if="${#fields.hasErrors('controle')}"
+                                 th:errors="*{controle}"></div>
+                            <div class="form-text">
+                                Inclua medidas preventivas, tratamentos químicos, biológicos ou culturais.
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="regiao" class="form-label">Região</label>
+                                <input type="text" class="form-control" th:field="*{regiao}"
+                                       th:classappend="${#fields.hasErrors('regiao')} ? 'is-invalid' : ''"
+                                       placeholder="Ex: Cerrado, Sul, Nordeste">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('regiao')}"
+                                     th:errors="*{regiao}"></div>
+                                <div class="form-text">
+                                    Região onde a doença é mais comum.
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="temperaturaFavoravel" class="form-label">
+                                    Temperatura Favorável (°C)
+                                </label>
+                                <input type="number" step="0.1" min="0" max="50" class="form-control"
+                                       th:field="*{temperaturaFavoravel}"
+                                       th:classappend="${#fields.hasErrors('temperaturaFavoravel')} ? 'is-invalid' : ''"
+                                       placeholder="Ex: 25.5">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('temperaturaFavoravel')}"
+                                     th:errors="*{temperaturaFavoravel}"></div>
+                                <div class="form-text">
+                                    Temperatura ideal para desenvolvimento.
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="umidadeFavoravel" class="form-label">
+                                    Umidade Favorável (%)
+                                </label>
+                                <input type="number" step="0.1" min="0" max="100" class="form-control"
+                                       th:field="*{umidadeFavoravel}"
+                                       th:classappend="${#fields.hasErrors('umidadeFavoravel')} ? 'is-invalid' : ''"
+                                       placeholder="Ex: 80.0">
+                                <div class="invalid-feedback" th:if="${#fields.hasErrors('umidadeFavoravel')}"
+                                     th:errors="*{umidadeFavoravel}"></div>
+                                <div class="form-text">
+                                    Umidade relativa ideal.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between mt-4">
+                            <a th:href="@{/doencas}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-1"></i>Voltar
+                            </a>
+                            <div>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-save me-1"></i>
+                                    <span th:text="${acao}">Salvar</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+</body>
+</html>

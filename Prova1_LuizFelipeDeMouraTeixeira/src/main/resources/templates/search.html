@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pesquisar Doenças</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body>
+<div class="container mt-4">
+
+    <!-- Alertas de feedback -->
+    <div th:if="${mensagemSucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${mensagemSucesso}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${mensagemErro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${mensagemErro}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <div th:if="${mensagemInfo}" class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="fas fa-info-circle me-2"></i>
+        <span th:text="${mensagemInfo}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <h1 class="text-success mb-4">
+        <i class="fas fa-search me-2"></i>
+        Pesquisar Doenças
+    </h1>
+
+    <div class="row">
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>Filtros de Pesquisa
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/doencas/pesquisar}" method="post">
+                        <div class="mb-3">
+                            <label class="form-label">Pesquisar por:</label>
+                            <select name="criterio" class="form-select" th:value="${param.criterio}">
+                                <option value="">Selecione um critério</option>
+                                <option value="nome" th:selected="${param.criterio != null && param.criterio[0] == 'nome'}">Nome da Doença</option>
+                                <option value="agenteCausador" th:selected="${param.criterio != null && param.criterio[0] == 'agenteCausador'}">Agente Causador</option>
+                                <option value="regiao" th:selected="${param.criterio != null && param.criterio[0] == 'regiao'}">Região</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="termo" class="form-label">Termo de Busca:</label>
+                            <input type="text" name="termo" class="form-control" id="termo"
+                                   th:value="${param.termo != null ? param.termo[0] : ''}"
+                                   placeholder="Digite o termo para busca">
+                        </div>
+
+                        <hr>
+
+                        <div class="mb-3">
+                            <label class="form-label">Tipo de Patógeno:</label>
+                            <select name="tipoPatogeno" class="form-select">
+                                <option value="">Todos os tipos</option>
+                                <option th:each="tipo : ${tiposPatogeno}"
+                                        th:value="${tipo}"
+                                        th:text="${tipo.descricao}"
+                                        th:selected="${param.tipoPatogeno != null && param.tipoPatogeno[0] == tipo.name()}"></option>
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Severidade:</label>
+                            <select name="severidade" class="form-select">
+                                <option value="">Todas as severidades</option>
+                                <option th:each="sev : ${severidade}"
+                                        th:value="${sev}"
+                                        th:text="${sev.descricao}"
+                                        th:selected="${param.severidade != null && param.severidade[0] == sev.name()}"></option>
+                            </select>
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-search me-1"></i>Pesquisar
+                            </button>
+                            <a th:href="@{/doencas/pesquisar}" class="btn btn-outline-secondary">
+                                <i class="fas fa-refresh me-1"></i>Limpar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-list me-2"></i>
+                        Resultados da Pesquisa
+                        <span class="badge bg-success ms-2" th:if="${totalResultados != null}" th:text="${totalResultados}">0</span>
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Estado inicial - nenhuma pesquisa realizada -->
+                    <div th:if="${resultados == null}" class="text-center p-5">
+                        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Realize uma pesquisa</h5>
+                        <p class="text-muted">Use os filtros ao lado para pesquisar doenças da soja.</p>
+                    </div>
+
+                    <!-- Estado sem resultados -->
+                    <div th:if="${resultados != null && resultados.isEmpty()}" class="text-center p-5">
+                        <i class="fas fa-exclamation-circle fa-3x text-warning mb-3"></i>
+                        <h5 class="text-muted">Nenhum resultado encontrado</h5>
+                        <p class="text-muted">Tente ajustar os critérios de pesquisa.</p>
+                    </div>
+
+                    <!-- Resultados da pesquisa -->
+                    <div th:if="${resultados != null && !resultados.isEmpty()}">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-success">
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Agente Causador</th>
+                                    <th>Tipo</th>
+                                    <th>Severidade</th>
+                                    <th>Ações</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr th:each="doenca : ${resultados}">
+                                    <td>
+                                        <strong th:text="${doenca.nome}">Nome da Doença</strong>
+                                    </td>
+                                    <td>
+                                        <em th:text="${doenca.agenteCausador}">Agente Causador</em>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-secondary" th:text="${doenca.tipoPatogeno != null ? doenca.tipoPatogeno.descricao : 'N/A'}">Tipo</span>
+                                    </td>
+                                    <td th:switch="${doenca.severidade != null ? doenca.severidade.name() : 'BAIXA'}">
+                                        <span th:case="'CRITICA'" class="badge bg-danger" th:text="${doenca.severidade.descricao}">Crítica</span>
+                                        <span th:case="'ALTA'" class="badge bg-warning text-dark" th:text="${doenca.severidade.descricao}">Alta</span>
+                                        <span th:case="'MEDIA'" class="badge bg-info" th:text="${doenca.severidade.descricao}">Média</span>
+                                        <span th:case="*" class="badge bg-success" th:text="${doenca.severidade != null ? doenca.severidade.descricao : 'Baixa'}">Baixa</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <a th:href="@{/doencas/detalhes/{id}(id=${doenca.id})}"
+                                               class="btn btn-sm btn-outline-info" title="Ver detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a th:href="@{/doencas/editar/{id}(id=${doenca.id})}"
+                                               class="btn btn-sm btn-outline-warning" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <!-- Botão de exclusão com modal -->
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    title="Excluir"
+                                                    data-bs-toggle="modal"
+                                                    th:data-bs-target="'#modalExcluir' + ${doenca.id}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modais de confirmação de exclusão para resultados -->
+    <div th:each="doenca : ${resultados}" th:if="${resultados != null && !resultados.isEmpty()}"
+         class="modal fade"
+         th:id="'modalExcluir' + ${doenca.id}"
+         tabindex="-1"
+         th:aria-labelledby="'modalExcluirLabel' + ${doenca.id}"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" th:id="'modalExcluirLabel' + ${doenca.id}">
+                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                        Confirmar Exclusão
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir a doença:</p>
+                    <div class="alert alert-warning">
+                        <strong th:text="${doenca.nome}">Nome da Doença</strong>
+                    </div>
+                    <p class="text-muted">Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <a th:href="@{/doencas/excluir/{id}(id=${doenca.id})}" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Excluir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+</body>
+</html>

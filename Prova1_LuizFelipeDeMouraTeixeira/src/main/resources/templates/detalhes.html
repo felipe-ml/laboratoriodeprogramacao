@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes da Doença</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
+</head>
+<body>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="card-title mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Detalhes da Doença
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Nome da Doença:</label>
+                            <p class="fs-5 fw-bold text-success" th:text="${doenca.nome}">Nome da Doença</p>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label text-muted">Agente Causador:</label>
+                            <p class="fs-6 fst-italic" th:text="${doenca.agenteCausador}">Agente Causador</p>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted">Tipo de Patógeno:</label>
+                            <p>
+                                <span class="badge bg-secondary fs-6" th:text="${doenca.tipoPatogeno != null ? doenca.tipoPatogeno.descricao : 'N/A'}">Tipo</span>
+                            </p>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted">Severidade:</label>
+                            <p th:switch="${doenca.severidade != null ? doenca.severidade.name() : 'BAIXA'}">
+                                <span th:case="'CRITICA'" class="badge bg-danger fs-6" th:text="${doenca.severidade.descricao}">Crítica</span>
+                                <span th:case="'ALTA'" class="badge bg-warning text-dark fs-6" th:text="${doenca.severidade.descricao}">Alta</span>
+                                <span th:case="'MEDIA'" class="badge bg-info fs-6" th:text="${doenca.severidade.descricao}">Média</span>
+                                <span th:case="*" class="badge bg-success fs-6" th:text="${doenca.severidade != null ? doenca.severidade.descricao : 'Baixa'}">Baixa</span>
+                            </p>
+                        </div>
+
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label text-muted">Data de Registro:</label>
+                            <p th:text="${doenca.dataRegistro != null ? #temporals.format(doenca.dataRegistro, 'dd/MM/yyyy') : 'N/A'}">01/01/2024</p>
+                        </div>
+                    </div>
+
+                    <div th:if="${doenca.sintomas != null and !#strings.isEmpty(doenca.sintomas)}" class="mb-3">
+                        <label class="form-label text-muted">Sintomas:</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="card-text" th:text="${doenca.sintomas}">Sintomas da doença</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div th:if="${doenca.controle != null and !#strings.isEmpty(doenca.controle)}" class="mb-3">
+                        <label class="form-label text-muted">Métodos de Controle:</label>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <p class="card-text" th:text="${doenca.controle}">Métodos de controle</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3" th:if="${doenca.regiao != null and !#strings.isEmpty(doenca.regiao)}">
+                            <label class="form-label text-muted">Região:</label>
+                            <p th:text="${doenca.regiao}">Região</p>
+                        </div>
+
+                        <div class="col-md-4 mb-3" th:if="${doenca.temperaturaFavoravel != null}">
+                            <label class="form-label text-muted">Temperatura Favorável:</label>
+                            <p>
+                                <span th:text="${doenca.temperaturaFavoravel}">25.0</span>°C
+                            </p>
+                        </div>
+
+                        <div class="col-md-4 mb-3" th:if="${doenca.umidadeFavoravel != null}">
+                            <label class="form-label text-muted">Umidade Favorável:</label>
+                            <p>
+                                <span th:text="${doenca.umidadeFavoravel}">80.0</span>%
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a th:href="@{/doencas}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-1"></i>Voltar à Lista
+                        </a>
+                        <div>
+                            <a th:href="@{/doencas/editar/{id}(id=${doenca.id})}" class="btn btn-warning">
+                                <i class="fas fa-edit me-1"></i>Editar
+                            </a>
+                            <!-- Botão excluir com modal -->
+                            <button type="button"
+                                    class="btn btn-danger ms-2"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#modalExcluir">
+                                <i class="fas fa-trash me-1"></i>Excluir
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmação de exclusão -->
+    <div class="modal fade" id="modalExcluir" tabindex="-1" aria-labelledby="modalExcluirLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalExcluirLabel">
+                        <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                        Confirmar Exclusão
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Tem certeza que deseja excluir a doença:</p>
+                    <div class="alert alert-warning">
+                        <strong th:text="${doenca.nome}">Nome da Doença</strong>
+                    </div>
+                    <p class="text-muted">Esta ação não pode ser desfeita.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancelar
+                    </button>
+                    <a th:href="@{/doencas/excluir/{id}(id=${doenca.id})}" class="btn btn-danger">
+                        <i class="fas fa-trash me-1"></i>Excluir
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+
+</body>
+</html>
