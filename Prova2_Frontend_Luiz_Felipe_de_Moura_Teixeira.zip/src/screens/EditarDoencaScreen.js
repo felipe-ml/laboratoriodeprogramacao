@@ -18,6 +18,7 @@ import {
     Text,
     ActivityIndicator,
     Divider,
+    Snackbar,
 } from 'react-native-paper';
 import { doencaService, tiposPatogeno, severidades } from '../services/api';
 
@@ -25,6 +26,9 @@ const EditarDoencaScreen = ({ route, navigation }) => {
     const { doencaId } = route.params;
     const [loading, setLoading] = useState(false);
     const [carregando, setCarregando] = useState(true);
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarType, setSnackbarType] = useState('success'); // 'success' or 'error'
     const [formData, setFormData] = useState({
         nome: '',
         agenteCausador: '',
@@ -63,16 +67,22 @@ const EditarDoencaScreen = ({ route, navigation }) => {
                     umidadeFavoravel: doenca.umidade_favoravel?.toString() || '',
                 });
             } else {
-                Alert.alert('Erro', 'Doença não encontrada');
-                navigation.goBack();
+                mostrarSnackbar('Doença não encontrada', 'error');
+                setTimeout(() => navigation.goBack(), 2000);
             }
         } catch (error) {
             console.error('❌ Erro ao carregar doença:', error);
-            Alert.alert('Erro', 'Não foi possível carregar os dados da doença: ' + error.message);
-            navigation.goBack();
+            mostrarSnackbar('Não foi possível carregar os dados da doença', 'error');
+            setTimeout(() => navigation.goBack(), 2000);
         } finally {
             setCarregando(false);
         }
+    };
+
+    const mostrarSnackbar = (message, type = 'success') => {
+        setSnackbarMessage(message);
+        setSnackbarType(type);
+        setSnackbarVisible(true);
     };
 
     const validarFormulario = () => {
@@ -93,8 +103,10 @@ const EditarDoencaScreen = ({ route, navigation }) => {
     };
 
     const handleAtualizar = async () => {
+        console.log('🔘 Botão atualizar clicado');
+        
         if (!validarFormulario()) {
-            Alert.alert('Erro', 'Preencha todos os campos obrigatórios');
+            mostrarSnackbar('Preencha todos os campos obrigatórios', 'error');
             return;
         }
 
@@ -110,14 +122,24 @@ const EditarDoencaScreen = ({ route, navigation }) => {
 
             console.log('🔄 Enviando dados para atualização:', dados);
             const response = await doencaService.atualizar(doencaId, dados);
+            console.log('📥 Resposta da API:', response.data);
 
             if (response.data.success) {
-                Alert.alert('Sucesso', 'Doença atualizada com sucesso!');
-                navigation.goBack();
+                console.log('✅ Atualização bem-sucedida!');
+                mostrarSnackbar('✅ Doença atualizada com sucesso!', 'success');
+                
+                // Aguarda 1.5 segundos antes de voltar para dar tempo de ver a mensagem
+                setTimeout(() => {
+                    navigation.goBack();
+                }, 1500);
+            } else {
+                console.log('⚠️ Resposta não indicou sucesso');
+                mostrarSnackbar('Erro ao atualizar doença', 'error');
             }
         } catch (error) {
             console.error('❌ Erro ao atualizar:', error);
-            Alert.alert('Erro', 'Não foi possível atualizar a doença: ' + error.message);
+            console.error('❌ Detalhes do erro:', error.response?.data || error.message);
+            mostrarSnackbar('Não foi possível atualizar a doença', 'error');
         } finally {
             setLoading(false);
         }
@@ -144,18 +166,6 @@ const EditarDoencaScreen = ({ route, navigation }) => {
             style={styles.container}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
-            <Appbar.Header style={styles.headerAppbar}>
-                <Appbar.Action
-                    icon={() => <Text style={styles.headerActionIcon}>◀</Text>}
-                    color="#fff"
-                    onPress={() => navigation.goBack()}
-                />
-                <Appbar.Content
-                    title="Editar Doença"
-                    titleStyle={styles.headerTitle}
-                />
-            </Appbar.Header>
-
             <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
                 {/* INFORMAÇÕES BÁSICAS */}
                 <Card style={styles.card} elevation={3}>
@@ -362,6 +372,24 @@ const EditarDoencaScreen = ({ route, navigation }) => {
                     </Button>
                 </View>
             </ScrollView>
+
+            {/* SNACKBAR PARA MENSAGENS */}
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={3000}
+                style={[
+                    styles.snackbar,
+                    snackbarType === 'success' ? styles.snackbarSuccess : styles.snackbarError
+                ]}
+                action={{
+                    label: 'OK',
+                    onPress: () => setSnackbarVisible(false),
+                    labelStyle: { color: '#fff' }
+                }}
+            >
+                <Text style={styles.snackbarText}>{snackbarMessage}</Text>
+            </Snackbar>
         </KeyboardAvoidingView>
     );
 };
@@ -498,6 +526,26 @@ const styles = StyleSheet.create({
         marginTop: 16,
         fontSize: 16,
         color: '#666',
+    },
+    snackbar: {
+        position: 'absolute',
+        top: '50%',
+        left: 16,
+        right: 16,
+        transform: [{ translateY: -50 }],
+        borderRadius: 8,
+        elevation: 6,
+    },
+    snackbarSuccess: {
+        backgroundColor: '#4caf50',
+    },
+    snackbarError: {
+        backgroundColor: '#f44336',
+    },
+    snackbarText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '500',
     },
 });
 

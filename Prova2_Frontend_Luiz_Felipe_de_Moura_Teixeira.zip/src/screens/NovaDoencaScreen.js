@@ -17,11 +17,15 @@ import {
     RadioButton,
     Text,
     Divider,
+    Snackbar,
 } from 'react-native-paper';
 import { doencaService, tiposPatogeno, severidades } from '../services/api';
 
 const NovaDoencaScreen = ({ navigation }) => {
     const [loading, setLoading] = useState(false);
+    const [snackbarVisible, setSnackbarVisible] = useState(false);
+    const [snackbarMessage, setSnackbarMessage] = useState('');
+    const [snackbarType, setSnackbarType] = useState('success'); // 'success' or 'error'
     const [formData, setFormData] = useState({
         nome: '',
         agenteCausador: '',
@@ -35,6 +39,12 @@ const NovaDoencaScreen = ({ navigation }) => {
     });
 
     const [errors, setErrors] = useState({});
+
+    const mostrarSnackbar = (message, type = 'success') => {
+        setSnackbarMessage(message);
+        setSnackbarType(type);
+        setSnackbarVisible(true);
+    };
 
     const validarFormulario = () => {
         const novosErros = {};
@@ -54,8 +64,10 @@ const NovaDoencaScreen = ({ navigation }) => {
     };
 
     const handleSalvar = async () => {
+        console.log('🔘 Botão cadastrar clicado');
+
         if (!validarFormulario()) {
-            Alert.alert('Erro', 'Preencha todos os campos obrigatórios');
+            mostrarSnackbar('Preencha todos os campos obrigatórios', 'error');
             return;
         }
 
@@ -71,14 +83,24 @@ const NovaDoencaScreen = ({ navigation }) => {
 
             console.log('🔄 Enviando dados para cadastro:', dados);
             const response = await doencaService.criar(dados);
+            console.log('📥 Resposta da API:', response.data);
 
             if (response.data.success) {
-                Alert.alert('Sucesso', 'Doença cadastrada com sucesso!');
-                navigation.goBack();
+                console.log('✅ Cadastro bem-sucedido!');
+                mostrarSnackbar('✅ Doença cadastrada com sucesso!', 'success');
+
+                // Aguarda 1.5 segundos antes de voltar para dar tempo de ver a mensagem
+                setTimeout(() => {
+                    navigation.goBack();
+                }, 1500);
+            } else {
+                console.log('⚠️ Resposta não indicou sucesso');
+                mostrarSnackbar('Erro ao cadastrar doença', 'error');
             }
         } catch (error) {
             console.error('❌ Erro ao cadastrar:', error);
-            Alert.alert('Erro', 'Não foi possível cadastrar a doença: ' + error.message);
+            console.error('❌ Detalhes do erro:', error.response?.data || error.message);
+            mostrarSnackbar('Não foi possível cadastrar a doença', 'error');
         } finally {
             setLoading(false);
         }
@@ -104,6 +126,7 @@ const NovaDoencaScreen = ({ navigation }) => {
             umidadeFavoravel: '',
         });
         setErrors({});
+        mostrarSnackbar('Formulário limpo', 'success');
     };
 
     return (
@@ -339,6 +362,24 @@ const NovaDoencaScreen = ({ navigation }) => {
                     </View>
                 </View>
             </ScrollView>
+
+            {/* SNACKBAR PARA MENSAGENS */}
+            <Snackbar
+                visible={snackbarVisible}
+                onDismiss={() => setSnackbarVisible(false)}
+                duration={3000}
+                style={[
+                    styles.snackbar,
+                    snackbarType === 'success' ? styles.snackbarSuccess : styles.snackbarError
+                ]}
+                action={{
+                    label: 'OK',
+                    onPress: () => setSnackbarVisible(false),
+                    labelStyle: { color: '#fff' }
+                }}
+            >
+                <Text style={styles.snackbarText}>{snackbarMessage}</Text>
+            </Snackbar>
         </KeyboardAvoidingView>
     );
 };
@@ -474,6 +515,26 @@ const styles = StyleSheet.create({
     cancelButtonText: {
         fontSize: 14,
         color: '#f44336',
+        fontWeight: '500',
+    },
+    snackbar: {
+        position: 'absolute',
+        top: '50%',
+        left: 16,
+        right: 16,
+        transform: [{ translateY: -50 }],
+        borderRadius: 8,
+        elevation: 6,
+    },
+    snackbarSuccess: {
+        backgroundColor: '#4caf50',
+    },
+    snackbarError: {
+        backgroundColor: '#f44336',
+    },
+    snackbarText: {
+        color: '#fff',
+        fontSize: 16,
         fontWeight: '500',
     },
 });
